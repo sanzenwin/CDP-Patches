@@ -14,27 +14,27 @@ try:
     from playwright.sync_api import Browser as SyncBrowser
     from playwright.sync_api import BrowserContext as SyncContext
 except ImportError:
-    AsyncBrowser: Type["AsyncBrowser"] = "AsyncBrowser"  # type: ignore[no-redef]
-    AsyncContext: Type["AsyncContext"] = "AsyncContext"  # type: ignore[no-redef]
-    SyncBrowser: Type["SyncBrowser"] = "SyncBrowser"  # type: ignore[no-redef]
-    SyncContext: Type["SyncContext"] = "SyncContext"  # type: ignore[no-redef]
+    AsyncBrowser: Type["AsyncBrowser"] = type("AsyncBrowser", (), {})  # type: ignore[no-redef]
+    AsyncContext: Type["AsyncContext"] = type("AsyncContext", (), {})  # type: ignore[no-redef]
+    SyncBrowser: Type["SyncBrowser"] = type("SyncBrowser", (), {})  # type: ignore[no-redef]
+    SyncContext: Type["SyncContext"] = type("SyncContext", (), {})  # type: ignore[no-redef]
 
 try:
     from botright.extended_typing import BrowserContext as BotrightContext
 except ImportError:
-    BotrightContext: Type["BotrightContext"] = "BotrightContext"  # type: ignore[no-redef]
+    BotrightContext: Type["BotrightContext"] = type("BotrightContext", (), {})  # type: ignore[no-redef]
 
 try:
     from selenium.webdriver import Chrome as SeleniumChrome
 except ImportError:
-    SeleniumChrome: Type["SeleniumChrome"] = "SeleniumChrome"  # type: ignore[no-redef]
+    SeleniumChrome: Type["SeleniumChrome"] = type("SeleniumChrome", (), {})  # type: ignore[no-redef]
 
 try:
     from selenium_driverless.sync.webdriver import Chrome as DriverlessSyncChrome
     from selenium_driverless.webdriver import Chrome as DriverlessAsyncChrome
 except ImportError:
-    DriverlessAsyncChrome: Type["DriverlessAsyncChrome"] = "DriverlessAsyncChrome"  # type: ignore[no-redef]
-    DriverlessSyncChrome: Type["DriverlessSyncChrome"] = "DriverlessSyncChrome"  # type: ignore[no-redef]
+    DriverlessAsyncChrome: Type["DriverlessAsyncChrome"] = type("DriverlessAsyncChrome", (), {})  # type: ignore[no-redef]
+    DriverlessSyncChrome: Type["DriverlessSyncChrome"] = type("DriverlessSyncChrome", (), {})  # type: ignore[no-redef]
 
 all_browsers = Union[AsyncContext, AsyncBrowser, SyncContext, SyncBrowser, BotrightContext, SeleniumChrome, DriverlessAsyncChrome, DriverlessSyncChrome]
 sync_browsers = Union[SeleniumChrome, SyncContext, SyncBrowser, DriverlessSyncChrome]
@@ -172,15 +172,15 @@ async def get_async_browser_pid(browser: async_browsers) -> int:
 # Selenium & Selenium Driverless
 def get_sync_selenium_scale_factor(driver: Union[SeleniumChrome, DriverlessSyncChrome]) -> int:
     if isinstance(driver, DriverlessSyncChrome):
-        _scale_factor: int = driver.execute_script("return window.devicePixelRatio", unique_context=True)
+        _scale_factor: int = driver.execute_script("return window.visualViewport.scale", unique_context=True)
         return _scale_factor
 
-    scale_factor: int = driver.execute_script("return window.devicePixelRatio")
+    scale_factor: int = driver.execute_script("return window.visualViewport.scale")
     return scale_factor
 
 
 async def get_async_selenium_scale_factor(driver: DriverlessAsyncChrome) -> int:
-    scale_factor: int = await driver.execute_script("return window.devicePixelRatio", unique_context=True)
+    scale_factor: int = await driver.execute_script("return window.visualViewport.scale", unique_context=True)
     return scale_factor
 
 
@@ -225,7 +225,7 @@ def get_sync_playwright_scale_factor(browser: Union[SyncContext, SyncBrowser]) -
     time2 = time.perf_counter()
     while (time.perf_counter() - time2) <= 10:
         try:
-            scale_factor_eval = cdp_session.send("Runtime.evaluate", {"expression": "window.devicePixelRatio", "contextId": isolated_exec_id})
+            scale_factor_eval = cdp_session.send("Runtime.evaluate", {"expression": "window.visualViewport.scale", "contextId": isolated_exec_id})
             scale_factor: int = scale_factor_eval["result"]["value"]
             break
         except SyncError as e:
@@ -287,7 +287,7 @@ async def get_async_playwright_scale_factor(browser: Union[AsyncContext, AsyncBr
     time2 = time.perf_counter()
     while (time.perf_counter() - time2) <= 10:
         try:
-            scale_factor_eval = await cdp_session.send("Runtime.evaluate", {"expression": "window.devicePixelRatio", "contextId": isolated_exec_id})
+            scale_factor_eval = await cdp_session.send("Runtime.evaluate", {"expression": "window.visualViewport.scale", "contextId": isolated_exec_id})
             scale_factor: int = scale_factor_eval["result"]["value"]
             break
         except AsyncError as e:
